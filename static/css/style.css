@@ -1,0 +1,14 @@
+button#led-ctl.on {
+  color: yellow;
+}
+button#led-ctl {
+  color: gray;
+}
+img#cam {
+  width: 100%;
+}
+iframe {
+  width: 100%;
+  height: auto;
+  border: none;
+}
