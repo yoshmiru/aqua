@@ -21,7 +21,7 @@ socket.once('connect', () => {
     .click(() => socket.emit('servo ctl'))
   setInterval(() => {
       socket.emit('read temp', (v) => $('#temp').text(v.toFixed(2)))
-      socket.emit('read ec', (v) => $('#ec').text(v.toFixed(2)))
+      socket.emit('read ec', (v) => $('#ec').text(v))
   }, 5000)
 }).on('alert', (msg) => alert(msg))
   .on('feed info', (now) => $('#last-feed').text(now))

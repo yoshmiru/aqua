@@ -44,10 +44,13 @@ class Log(db.Model):
         self.ec = ec
         self.date = datetime.now()
     def __repr__(self):
-        return '<Log {%f}:{%f} at {:%Y-%m-%d %H:%M:%S}>'.format(self.temp, self.ec, self.date)
+        return '<Log {}:{} at {:%Y-%m-%d %H:%M:%S}>'.format(self.temp, self.ec, self.date)
 
 def to_temp(v):
-    return -1481.96 + sqrt((2.1962 * pow(10, 6)) + ((1.8639-v)/(3.88*pow(10, -6))))
+    try:
+        return -1481.96 + sqrt((2.1962 * pow(10, 6)) + ((1.8639-v)/(3.88*pow(10, -6))))
+    except ValueError:
+        app.logger.error('ValueError on {}'.format(v))
 
 def read_temp():
     ser.write(b'T')
@@ -56,6 +59,7 @@ def read_temp():
 
 def read_ec():
     ser.write(b'E')
+    app.logger.debug('discharge: %f', float(ser.readline()))
     return float(ser.readline())
 
 def store_log():
@@ -92,16 +96,16 @@ def handle_servo_ctl():
         app.logger.info('feed from %s', request.remote_addr)
         ser.write(b'S')
         ser.write(b'165')
-        sleep(1)
+        sleep(2)
         ser.write(b'S')
-        ser.write(b'100')
+        ser.write(b'110')
 
 temps = []
 @socketio.on('read temp')
 def handle_read_temp():
     temp = read_temp()
     temps.append(temp)
-    app.logger.debug('temp: %f', temp)
+    app.logger.debug('temp: {}'.format(temp))
     if (len(temps) > 10):
         temps.pop(0)
     return reduce(lambda a, b: a + b, temps) / len(temps)
