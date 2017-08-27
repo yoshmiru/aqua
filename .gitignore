@@ -3,3 +3,5 @@ aqua.db*
 __pycache__
 *.swp
 *.swo
+*.log
+env

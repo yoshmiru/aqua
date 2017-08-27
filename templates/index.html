@@ -1,36 +1,27 @@
-<html>
-<head>
-	<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-<body>
-	<div class="container">
-		<div class="btn-group">
-			<button id="cam-ctl" class="btn btn-lg">
-				<i class="material-icons">airplay</i>
-			</button>
-			<button id="servo-ctl" class="btn btn-lg" disabled>
-				<i class="material-icons">local_dining</i>
-			</button>
-			<button id="led-ctl" class="btn btn-lg" disabled>
-				<i class="material-icons">lightbulb_outline</i>
-			</button>
-		</div>
-		<div class="row">
-			<div class="col-sm-2"><span id="temp"></span>&#x00b0;C</div>
-			<div class="col-sm-2"><span id="ec"></span></div>
-			<div class="col-sm-2">前回の食事&nbsp;<span id="last-feed"></span></div>
-		</div>
-		<div class="row">
-			<div class="col-sm-12">
-				<img id="cam" src="">
-			</div>
-		</div>
-		<script src="//code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
-		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-		<script src="{{ url_for('static', filename='js/aqua.js') }}"></script>
-	</div>
-</body>
-</html>
+{% extends "layout.html" %}
+{% block body %}
+<div class="btn-group">
+  <button id="cam-ctl" class="btn btn-lg">
+    <i class="material-icons">airplay</i>
+  </button>
+  <button id="servo-ctl" class="btn btn-lg" disabled>
+    <i class="material-icons">local_dining</i>
+  </button>
+  <button id="led-ctl" class="btn btn-lg" disabled>
+    <i class="material-icons">lightbulb_outline</i>
+  </button>
+</div>
+<div class="row">
+  <div class="col-sm-2"><span id="temp"></span>&#x00b0;C</div>
+  <div class="col-sm-2"><span id="ec"></span></div>
+  <div class="col-sm-2">前回の食事&nbsp;<span id="last-feed"></span></div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <img id="cam" src="">
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/aqua.js') }}"></script>
+{% endblock %}
