@@ -1,16 +1,16 @@
 from datetime import datetime 
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, send, emit
-from flask_sqlalchemy import SQLAlchemy
 from functools import reduce
 from gpiozero import LED
-import logging
-from logging.handlers import RotatingFileHandler
 from math import sqrt, pow
-import os
 from serial import Serial
 from threading import Timer
 from time import sleep
+# local
+from aqua_db import setup as setup_db
+from aqua_log import setup as setup_log
+from handler.analyze import analyze as h_analyze, plot as h_plot
 
 def logHandler():
     handler = RotatingFileHandler('aqua.log', maxBytes=1024 * 1024 * 100, backupCount=20)
@@ -22,18 +22,16 @@ app = Flask(__name__)
 # enable socketio
 socketio = SocketIO(app)
 # db settings
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///aqua.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-db.create_all()
+db = setup_db(app)
 # logger settings
-app.logger.setLevel(logging.DEBUG)
-app.logger.addHandler(logHandler())
+logger = setup_log(app)
 # GPIO settings
 led = LED(2)
 ser = Serial('/dev/ttyACM0')
 sleep(2)
+#
 # defining models
+#
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     temp = db.Column(db.Float)
@@ -50,12 +48,19 @@ def to_temp(v):
     try:
         return -1481.96 + sqrt((2.1962 * pow(10, 6)) + ((1.8639-v)/(3.88*pow(10, -6))))
     except ValueError:
-        app.logger.error('ValueError on {}'.format(v))
+        app.logger.error('ValueError on `{}`'.format(v))
 
 def read_temp():
     ser.write(b'T')
-    v = float(ser.readline())
-    return to_temp(v)
+    mv = ser.readline()
+    try:
+        v = float(mv)
+        return to_temp(v)
+    except Exception as e:
+        app.logger.error('Could not read temp: `{}`'.format(mv))
+        print(e)
+        app.logger.error(e)
+        return None
 
 def read_ec():
     ser.write(b'E')
@@ -71,6 +76,14 @@ def store_log():
 def index():
     app.logger.info('access from %s', request.remote_addr)
     return render_template('index.html')
+
+@app.route('/analyze')
+def analyze():
+    return h_analyze(request)
+
+@app.route('/plot.png')
+def plot():
+    return h_plot(Log, request)
 
 @socketio.on('led ctl')
 def handle_led_ctl(on):
@@ -104,11 +117,13 @@ temps = []
 @socketio.on('read temp')
 def handle_read_temp():
     temp = read_temp()
-    temps.append(temp)
-    app.logger.debug('temp: {}'.format(temp))
-    if (len(temps) > 10):
-        temps.pop(0)
+    if temp is not None:
+        temps.append(temp)
+        app.logger.debug('temp: {}'.format(temp))
+        if (len(temps) > 10):
+            temps.pop(0)
     return reduce(lambda a, b: a + b, temps) / len(temps)
+
 
 @socketio.on('read ec')
 def handle_read_ec():
@@ -117,3 +132,6 @@ def handle_read_ec():
     return ec
 
 store_log()
+
+if __name__ == '__main__':
+    app.run(debug=True, use_reloader=True, host="0.0.0.0")
