@@ -79,7 +79,7 @@ def index():
 
 @app.route('/analyze')
 def analyze():
-    return h_analyze(request)
+    return h_analyze(Log, request)
 
 @app.route('/plot.png')
 def plot():

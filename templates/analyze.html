@@ -9,12 +9,19 @@
   <p>{{ form.submit(class="btn btn-default") }}
 </form>
 
-{% if hasQuery %}
-<img class="plot" src="{{ url_for('plot', f=f, t=t) }}">
-{% endif %}
+  <div id='temp'></div>
+  <div id='ec'></div>
+  <script>
+  const logs = [
+  {% for log in logs %}
+    {temp: {{log.temp}}, ec: {{log.ec}}, date: new Date('{{log.date}}')},
+  {% endfor %}
+  ]
+  </script>
 
 {% endblock %}
 
 {% block scripts %}
+<script src="//cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="{{ url_for('static', filename='js/analyze.js') }}"></script>
 {% endblock %}

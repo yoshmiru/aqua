@@ -24,7 +24,7 @@ class Log(db.Model):
 
 @app.route('/')
 def index():
-    return h_analyze(request)
+    return h_analyze(Log, request)
 
 @app.route('/plot.png')
 def plot():

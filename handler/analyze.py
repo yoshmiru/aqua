@@ -12,17 +12,27 @@ class AnalyzeForm(Form):
     t = DateField('To', [])
     submit = SubmitField('表示')
 
-def analyze(request):
+def analyze(Log, request):
     fmt = '%Y-%m-%d'
     form = AnalyzeForm(request.form)
     f, t = query(request, 'f'), query(request, 't')
     hasQuery = f is not None and t is not None
     _t = None if t is None else (datetime.strptime(t, fmt) + timedelta(days=1)).date()
+    logs = list(map(none2zero, Log.query \
+              .filter(Log.date>=f) \
+              .filter(Log.date<=_t) \
+              .all())) if hasQuery else []
     if hasQuery:
         form.f.data = datetime.strptime(f, fmt).date()
         form.t.data = datetime.strptime(t, fmt).date()
     return render_template('analyze.html'
-            , form=form, f=f, t=_t, hasQuery=hasQuery)
+            , form=form, logs=logs)
+
+def none2zero(log):
+    temp = 0 if log.temp is None else log.temp
+    ec = 0 if log.ec is None else log.ec
+    return {'temp': temp, 'ec': ec, 'date': log.date}
+
 
 def plot(Log, request):
     f, t = query(request, 'f'), query(request, 't')
@@ -31,9 +41,9 @@ def plot(Log, request):
         return send_file('static/img/no_data.png', 'image/png')
     temps = list(map(lambda log:
         0 if log.temp is None else log.temp, logs))
-    dates = list(map(lambda log: log.date, logs))
     ecs = list(map(lambda log:
         0 if log.ec is None else log.ec, logs))
+    dates = list(map(lambda log: log.date, logs))
     # plot
     font = {'fontname': 'Mona'}
     plt.figure(1)
