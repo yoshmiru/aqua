@@ -35,13 +35,20 @@ def plot(Log, request):
     ecs = list(map(lambda log:
         0 if log.ec is None else log.ec, logs))
     # plot
+    font = {'fontname': 'Mona'}
     plt.figure(1)
     plt.subplot(211)
+    plt.xlabel('時間', **font)
+    plt.ylabel('温度', **font)
     plt.plot(dates, temps)
     plt.axis([dates[0], dates[len(dates)-1], -5, 40])
     plt.subplot(212)
+    plt.xlabel('時間', **font)
+    plt.ylabel('電気伝導度 アナログ入力(0-1024)', **font)
     plt.plot(dates, ecs)
-    plt.axis([dates[0], dates[len(dates)-1], 0, 1000])
+    plt.axis([dates[0], dates[len(dates)-1], 500, 700])
+    # adjust layout
+    plt.tight_layout()
     # make response
     canvas = FigureCanvas(plt.figure(1))
     po = BytesIO()

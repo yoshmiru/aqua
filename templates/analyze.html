@@ -10,7 +10,7 @@
 </form>
 
 {% if hasQuery %}
-<img src="{{ url_for('plot', f=f, t=t) }}">
+<img class="plot" src="{{ url_for('plot', f=f, t=t) }}">
 {% endif %}
 
 {% endblock %}

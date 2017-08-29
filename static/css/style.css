@@ -4,7 +4,7 @@ button#led-ctl.on {
 button#led-ctl {
   color: gray;
 }
-img#cam {
+img#cam, img.plot {
   width: 100%;
 }
 iframe {
