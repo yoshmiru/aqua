@@ -19,10 +19,13 @@ socket.once('connect', () => {
   $('#servo-ctl')
     .prop('disabled', false)
     .click(() => socket.emit('servo ctl'))
+  const interval = 5000
   setInterval(() => {
-      socket.emit('read temp', (v) => $('#temp').text(v.toFixed(2)))
-      socket.emit('read ec', (v) => $('#ec').text(v))
-  }, 5000)
+    socket.emit('read temp', (v) => $('#temp').text(v.toFixed(2)))
+    // 時間をずらす
+    setTimeout(() =>
+      socket.emit('read ec', (v) => $('#ec').text(v)), interval/2)
+  }, interval)
 }).on('alert', (msg) => alert(msg))
   .on('feed info', (now) => $('#last-feed').text(now))
 

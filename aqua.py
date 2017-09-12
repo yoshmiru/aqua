@@ -44,28 +44,39 @@ class Log(db.Model):
     def __repr__(self):
         return '<Log {}:{} at {:%Y-%m-%d %H:%M:%S}>'.format(self.temp, self.ec, self.date)
 
+class FeedLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date=db.Column(db.DateTime())
+    def __init__(self):
+        self.date = datetime.now()
+    def __repr__(self):
+        return '<Feed at {:%Y-%m-%d %H:%M:%S}>'.format(self.date)
+
 def to_temp(v):
     try:
         return -1481.96 + sqrt((2.1962 * pow(10, 6)) + ((1.8639-v)/(3.88*pow(10, -6))))
-    except ValueError:
+    except ValueError as e:
         app.logger.error('ValueError on `{}`'.format(v))
+        app.logger.error(e)
 
 def read_temp():
     ser.write(b'T')
-    mv = ser.readline()
+    raw = ser.readline().decode('utf-8')
+    mv = ser.readline().decode('utf-8')
     try:
         v = float(mv)
-        return to_temp(v)
+        temp = to_temp(v)
+        app.logger.debug('raw: {}, vo: {}, temp: {}'.format(raw, v, temp))
+        return temp
     except Exception as e:
         app.logger.error('Could not read temp: `{}`'.format(mv))
-        print(e)
         app.logger.error(e)
         return None
 
 def read_ec():
     ser.write(b'E')
-    app.logger.debug('discharge: %f', float(ser.readline()))
-    return float(ser.readline())
+    app.logger.debug('discharge: %f', float(ser.readline().decode('utf-8')))
+    return float(ser.readline().decode('utf-8'))
 
 def store_log():
     db.session.add(Log(read_temp(), read_ec()))
@@ -92,38 +103,30 @@ def handle_led_ctl(on):
     else:
         led.off()
 
-feeds = [datetime.now()]
 @socketio.on('servo ctl')
 def handle_servo_ctl():
+    interval = 60 * 60
     now = datetime.now()
-    last = feeds.pop()
-    delta = now - last
-    if delta.seconds < 60 * 60:
-        feeds.append(last)
+    lastFeed = FeedLog.query.order_by(FeedLog.date.desc()).first()
+    last = interval + 1 if lastFeed is None else lastFeed.date
+    delta = now - lastFeed.date
+    if delta.seconds < interval:
         emit('alert', 'あげ過ぎ注意!')
         emit('feed info', '{:%H:%M}'.format(last))
     else:
-        feeds.append(now)
-        emit('feed info', '{:%H:%M}'.format(now))
-        feeds.append(now)
-        app.logger.info('feed from %s', request.remote_addr)
         ser.write(b'S')
         ser.write(b'165')
         sleep(2)
         ser.write(b'S')
         ser.write(b'110')
+        emit('feed info', '{:%H:%M}'.format(now))
+        app.logger.info('feed from %s', request.remote_addr)
+        db.session.add(FeedLog())
+        db.session.commit()
 
-temps = []
 @socketio.on('read temp')
 def handle_read_temp():
-    temp = read_temp()
-    if temp is not None:
-        temps.append(temp)
-        app.logger.debug('temp: {}'.format(temp))
-        if (len(temps) > 10):
-            temps.pop(0)
-    return reduce(lambda a, b: a + b, temps) / len(temps)
-
+    return read_temp()
 
 @socketio.on('read ec')
 def handle_read_ec():
