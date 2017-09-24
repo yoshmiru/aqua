@@ -76,7 +76,12 @@ def read_temp():
 def read_ec():
     ser.write(b'E')
     app.logger.debug('discharge: %f', float(ser.readline().decode('utf-8')))
-    return float(ser.readline().decode('utf-8'))
+    v = ser.readline().decode('utf-8')
+    try:
+        return float(v)
+    except ValueError as e:
+        app.logger.error('ValueError on `{}`'.format(v))
+        app.logger.error(e)
 
 def store_log():
     db.session.add(Log(read_temp(), read_ec()))
