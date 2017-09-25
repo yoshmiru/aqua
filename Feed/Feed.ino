@@ -46,59 +46,59 @@ void loop() {
       case 'E':
         // 割り込み禁止
         noInterrupts();
-        Serial.println(discharge(200, ecOutPin, ecInPin));
+        Serial.println(discharge(0, ecOutPin, ecInPin));
         Serial.println(readEc(100, ecOutPin, ecInPin));
-        for (int i=0; i<10; i+=1) {
-          int term = pow(2, i);
-          float v1 = discharge(200, ecOutPin, ecInPin);
-          float v2 = readEc(term, ecOutPin, ecInPin);
-          Serial.print(term);
-          Serial.print(": ");
-          Serial.print(v2);
-          Serial.print(" - ");
-          Serial.print(v1);
-          Serial.print(" = ");
-          Serial.print(v2 - v1);
-          Serial.print("\n");
-//          Serial.println(v2 - v1);
-        }
+//        for (int i=0; i<10; i+=1) {
+//          int term = pow(2, i);
+//          float v1 = discharge(100, ecOutPin, ecInPin);
+//          float v2 = readEc(term, ecOutPin, ecInPin);
+//          Serial.print(term);
+//          Serial.print(": ");
+//          Serial.print(v2);
+//          Serial.print(" - ");
+//          Serial.print(v1);
+//          Serial.print(" = ");
+//          Serial.print(v2 - v1);
+//          Serial.print("\n");
+////          Serial.println(v2 - v1);
+//        }
         // 割り込み許可
         interrupts();
         break;
-      case 'P':
-        // 割り込み禁止
-        noInterrupts();
-        Serial.println(discharge(30000, phOutPin, phInPin));
-        Serial.println(readEc(100, phOutPin, phInPin));
-        for (int i=0; i<10; i+=1) {
-          int term = pow(2, i);
-          float v1 = discharge(30000, phOutPin, phInPin);
-          float v2 = readEc(pow(10, i), phOutPin, phInPin);
-          Serial.print(term);
-          Serial.print(": ");
-          Serial.print(v2);
-          Serial.print(" - ");
-          Serial.print(v1);
-          Serial.print(" = ");
-          Serial.print(v2 - v1);
-          Serial.print("\n");
-//          Serial.println(v2 + "-" + v1 + "=" + (v2 - v1));
-        }
-        // 割り込み許可
-        interrupts();
-        break;
+//      case 'P':
+//        // 割り込み禁止
+//        noInterrupts();
+//        Serial.println(discharge(100, phOutPin, phInPin));
+//        Serial.println(readEc(100, phOutPin, phInPin));
+//        for (int i=0; i<10; i+=1) {
+//          int term = pow(2, i);
+//          float v1 = discharge(100, phOutPin, phInPin);
+//          float v2 = readEc(pow(10, i), phOutPin, phInPin);
+//          Serial.print(term);
+//          Serial.print(": ");
+//          Serial.print(v2);
+//          Serial.print(" - ");
+//          Serial.print(v1);
+//          Serial.print(" = ");
+//          Serial.print(v2 - v1);
+//          Serial.print("\n");
+////          Serial.println(v2 + "-" + v1 + "=" + (v2 - v1));
+//        }
+//        // 割り込み許可
+//        interrupts();
+//        break;
     }
   }
 }
 
-float discharge(int term, int outPin, int inPin) {
+float discharge(int minValue, int outPin, int inPin) {
   pinMode(outPin, OUTPUT);
   // 放電
   digitalWrite(outPin, LOW);
-  delay(term);
-//  while ((int) aRead(inPin) > 0) {
-//    delay(10);
-//  }
+//  delay(term);
+  while (analogRead(inPin) > minValue) {
+    delay(10);
+  }
   delay(2);
   float v = aRead(inPin);
   delay(2);
