@@ -12,3 +12,16 @@ iframe {
   height: auto;
   border: none;
 }
+#cam-move {
+  width: 150px;
+  height: 150px;
+  border: 1px solid black;
+  position: relative;
+}
+#cam-move-cursor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  cursor: grab;
+  margin: -10px 0 0 -15px;
+}

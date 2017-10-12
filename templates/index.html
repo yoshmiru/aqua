@@ -17,6 +17,14 @@
   <div class="col-sm-2">前回の食事&nbsp;<span id="last-feed"></span></div>
 </div>
 <div class="row">
+  <div id="cam-move" ondrop="camMvEnd(event)" ondragover="allowDrop(event)">
+    <div id="cam-move-cursor" draggable="true"
+      ondragstart="camMv(event)" ondragenter="addDropEffect(event)">
+      <img src="{{ url_for('static', filename='img/cursor.png') }}">
+    </div>
+  </div>
+  <div id="cam-pos-x"></div>
+  <div id="cam-pos-y"></div>
   <div class="col-sm-12">
     <img id="cam" src="">
   </div>
@@ -24,4 +32,5 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/aqua.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cam-ctl.js') }}"></script>
 {% endblock %}
