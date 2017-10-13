@@ -2,15 +2,16 @@ from datetime import datetime
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, send, emit
 from functools import reduce
-from gpiozero import LED
 from math import sqrt, pow
 from serial import Serial
 from threading import Timer
 from time import sleep
+from RPi import GPIO
+
 # local
 from aqua_db import setup as setup_db
 from aqua_log import setup as setup_log
-from handler.analyze import analyze as h_analyze, plot as h_plot
+from handler.analyze import analyze as h_analyze#, plot as h_plot
 
 def logHandler():
     handler = RotatingFileHandler('aqua.log', maxBytes=1024 * 1024 * 100, backupCount=20)
@@ -26,7 +27,9 @@ db = setup_db(app)
 # logger settings
 logger = setup_log(app)
 # GPIO settings
-led = LED(2)
+led = 3
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(led, GPIO.OUT, initial=GPIO.LOW)
 ser = Serial('/dev/ttyACM0')
 sleep(2)
 #
@@ -97,16 +100,16 @@ def index():
 def analyze():
     return h_analyze(Log, request)
 
-@app.route('/plot.png')
-def plot():
-    return h_plot(Log, request)
+#@app.route('/plot.png')
+#def plot():
+#    return h_plot(Log, request)
 
 @socketio.on('led ctl')
 def handle_led_ctl(on):
     if on:
-        led.on()
+        GPIO.output(led, GPIO.HIGH)
     else:
-        led.off()
+        GPIO.output(led, GPIO.LOW)
 
 @socketio.on('servo ctl')
 def handle_servo_ctl():
