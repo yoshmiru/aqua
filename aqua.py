@@ -12,6 +12,7 @@ from RPi import GPIO
 from aqua_db import setup as setup_db
 from aqua_log import setup as setup_log
 from handler.analyze import analyze as h_analyze#, plot as h_plot
+from handler.cam import cam as h_cam, cam_ctl as h_cam_ctl
 
 def logHandler():
     handler = RotatingFileHandler('aqua.log', maxBytes=1024 * 1024 * 100, backupCount=20)
@@ -64,8 +65,8 @@ def to_temp(v):
 
 def read_temp():
     ser.write(b'T')
-    raw = ser.readline().decode('utf-8')
-    mv = ser.readline().decode('utf-8')
+    raw = 0#ser.readline().decode('utf-8')
+    mv = 0#ser.readline().decode('utf-8')
     try:
         v = float(mv)
         temp = to_temp(v)
@@ -78,9 +79,9 @@ def read_temp():
 
 def read_ec():
     ser.write(b'E')
-    app.logger.debug('discharge: %f', float(ser.readline().decode('utf-8')))
-    v = ser.readline().decode('utf-8')
+    v = 0#ser.readline().decode('utf-8')
     try:
+        app.logger.debug('discharge: {}'.format(v))
         return float(v)
     except ValueError as e:
         app.logger.error('ValueError on `{}`'.format(v))
@@ -139,10 +140,14 @@ def handle_read_temp():
 @socketio.on('read ec')
 def handle_read_ec():
     ec = read_ec()
-    app.logger.debug('ec: %f', ec)
+    app.logger.debug('ec: {}'.format(ec))
     return ec
 
-store_log()
+@socketio.on('cam ctl')
+def cam_ctl(x, y):
+    h_cam_ctl(ser, x, y)
+
+#store_log()
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True, host="0.0.0.0")

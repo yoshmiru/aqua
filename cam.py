@@ -10,7 +10,7 @@ def index():
     return h_cam()
 
 # dummy
-@app.route('/')
+@app.route('/analyze')
 def analyze():
     return None
 

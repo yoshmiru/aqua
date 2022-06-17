@@ -1,6 +1,6 @@
 const url = `http://${document.domain}:${location.port}`
 const socket = io.connect(url)
-const cam = 'http://www.explop.com/goldfish'
+const cam = `http://${window.location.hostname}:8081`
 
 $ledCtl = $('#led-ctl')
 $('#cam-ctl').click(() => {
@@ -20,12 +20,14 @@ socket.once('connect', () => {
     .prop('disabled', false)
     .click(() => socket.emit('servo ctl'))
   const interval = 5000
+	/*
   setInterval(() => {
-    socket.emit('read temp', (v) => $('#temp').text(v.toFixed(2)))
+    socket.emit('read temp', (v) => v && $('#temp').text(v.toFixed(2)))
     // 時間をずらす
     setTimeout(() =>
-      socket.emit('read ec', (v) => $('#ec').text(v)), interval/2)
+      socket.emit('read ec', (v) => v && $('#ec').text(v)), interval/2)
   }, interval)
+  */
 }).on('alert', (msg) => alert(msg))
   .on('feed info', (now) => $('#last-feed').text(now))
 

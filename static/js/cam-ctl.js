@@ -6,21 +6,29 @@ const $posX = $('#cam-pos-x')
 const $posY = $('#cam-pos-y')
 
 const deg = (pos, width) => {
-  const margin = 0.9
+  const margin = 0.8
   const full = width / 2
   const delta = pos - full
-  return 90 * delta / (full * margin)
+  const view = 60
+  return parseInt(view * delta / (full * margin))
 }
 
 const update = () => {
   // show initial angle
   const pos = $cursor.position()
-  const x = deg(pos.left, $controler.width())
-  const y = deg(pos.top, $controler.height())
+  const x = -deg(pos.left, $controler.width()) + 90
+  const y = deg(pos.top, $controler.height()) + 60
   $posX.text(x)
   $posY.text(y)
   socket.emit('cam ctl', x, y)
 }
+
+/**
+ * click to move cursor
+ */
+$controler.click((ev) => {
+  camMvEnd(ev)
+})
 
 const camMv = (ev) => {
   //ev.target.style.cursor = 'grabbing'
